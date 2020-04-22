@@ -41,6 +41,17 @@ let c = if((a+b) == 0){
 
 ```
 
+- REPL
+
+```javascript
+Make me giggle !
+giggle>> let add_mod = fn(x,y,z){ (x + y) % z};
+giggle>> add_mod(15,16,3)
+1
+giggle>> add_mod(252,2343,13)
+8
+````
+
 Return statements are not needed the language is expression first.
 
 The tests contain further code examples you can run.
