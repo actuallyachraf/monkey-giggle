@@ -38,3 +38,22 @@ func (f *Function) Inspect() string {
 
 	return out.String()
 }
+
+// BuiltInFunc defines functions that are part of the language and operate
+// on native objects.
+type BuiltInFunc func(args ...Object) Object
+
+// BuiltIn describes builtin function objects
+type BuiltIn struct {
+	Fn BuiltInFunc
+}
+
+// Type implements the object interface
+func (b *BuiltIn) Type() Type {
+	return BUILTIN
+}
+
+// Inspect implements the object interface
+func (b *BuiltIn) Inspect() string {
+	return "built-in function"
+}

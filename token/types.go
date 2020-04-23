@@ -12,6 +12,8 @@ const (
 	IDENT = "IDENT"
 	// INT denotes the integer type
 	INT = "INT"
+	// STRING denotes the string type
+	STRING = "STRING"
 
 	// Operators
 
@@ -57,6 +59,10 @@ const (
 	LBRACE = "{"
 	// RBRACE represents a right curly brace
 	RBRACE = "}"
+	// LBRACKET represents a left bracket
+	LBRACKET = "["
+	// RBRACKET represents a right bracked
+	RBRACKET = "]"
 
 	// Keywords are special words that can't be used as identifiers
 	// such as the "let" declaration for values, "fn" for functions.

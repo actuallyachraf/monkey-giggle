@@ -41,6 +41,47 @@ let c = if((a+b) == 0){
 
 ```
 
+- Builin Functions
+
+```javascript
+
+giggle>> len("Hello World")
+11
+giggle>> len([1,2,3,4,5])
+5
+giggle>> tail([1,2,3,4,5])
+[2, 3, 4, 5]
+giggle>> head([1,2,3,4,5])
+1
+giggle>> append([1,2,3,4,5],6)
+[1, 2, 3, 4, 5, 6]
+
+```
+
+- Functions
+
+```javascript
+
+giggle>> let map = fn(arr,f){
+    let iter = fn(arr,acc){
+         if (len(arr) == 0){
+              acc
+        } else {
+            iter(tail(arr),append(acc,f(head(arr))));
+        }
+    };
+    iter(arr,[]);
+    };
+giggle>> map([1,2,3],square)
+[1, 4, 9]
+giggle>> let cube = fn(x){ x*x*x}
+giggle>> cube(3)
+27
+giggle>> map([1,2,3],cube)
+[1, 8, 27]
+
+```
+
 - REPL
 
 ```javascript
@@ -50,8 +91,11 @@ giggle>> add_mod(15,16,3)
 1
 giggle>> add_mod(252,2343,13)
 8
+giggle>> exit
+Ohhh you are leaving already !⏎
+
 ````
 
-Return statements are not needed the language is expression first.
+Return statements are not needed the language is expression oriented.
 
 The tests contain further code examples you can run.

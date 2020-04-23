@@ -127,6 +127,54 @@ func (il *IntegerLiteral) String() string {
 	return string(il.Token.Literal)
 }
 
+// StringLiteral represents a literal string
+type StringLiteral struct {
+	Token token.Token
+	Value string
+}
+
+func (sl *StringLiteral) expressionNode() {}
+
+// TokenLiteral implements the node interface
+func (sl *StringLiteral) TokenLiteral() token.Literal {
+	return sl.Token.Literal
+}
+
+// ArrayLiteral represents arrays
+type ArrayLiteral struct {
+	Token    token.Token
+	Elements []Expression
+}
+
+func (al *ArrayLiteral) expressionNode() {}
+
+// TokenLiteral implements the node interface
+func (al *ArrayLiteral) TokenLiteral() token.Literal {
+	return al.Token.Literal
+}
+
+// String implements the stringer interface
+func (al *ArrayLiteral) String() string {
+	var out bytes.Buffer
+
+	elements := []string{}
+
+	for _, el := range al.Elements {
+		elements = append(elements, el.String())
+	}
+
+	out.WriteString("[")
+	out.WriteString(strings.Join(elements, ", "))
+	out.WriteString("]")
+
+	return out.String()
+}
+
+// String implements the stringer interface
+func (sl *StringLiteral) String() string {
+	return string(sl.Token.Literal)
+}
+
 // PrefixExpression represents prefixed expressions.
 type PrefixExpression struct {
 	Token    token.Token
@@ -327,4 +375,32 @@ func (ce *CallExpression) String() string {
 
 	return out.String()
 
+}
+
+// IndexExpression represents indexing expressions for index accessible ds.
+type IndexExpression struct {
+	Token token.Token
+	Left  Expression
+	Index Expression
+}
+
+func (ie *IndexExpression) expressionNode() {}
+
+// TokenLiteral implements the node interface
+func (ie *IndexExpression) TokenLiteral() token.Literal {
+	return ie.Token.Literal
+}
+
+// String implements the stringer interface
+func (ie *IndexExpression) String() string {
+
+	var out bytes.Buffer
+
+	out.WriteString("(")
+	out.WriteString(ie.Left.String())
+	out.WriteString("[")
+	out.WriteString(ie.Index.String())
+	out.WriteString("])")
+
+	return out.String()
 }

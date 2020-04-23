@@ -27,21 +27,24 @@ const (
 	PREFIX
 	// CALL marks function calls
 	CALL
+	// INDEX marks index operations
+	INDEX
 )
 
 var precedenceTable = map[token.Type]int{
-	token.EQ:     EQUALS,
-	token.NEQ:    EQUALS,
-	token.LT:     LESSGREATER,
-	token.GT:     LESSGREATER,
-	token.GE:     LESSGREATER,
-	token.LE:     LESSGREATER,
-	token.ADD:    SUM,
-	token.SUB:    SUM,
-	token.MUL:    PRODUCT,
-	token.DIV:    PRODUCT,
-	token.MOD:    PRODUCT,
-	token.LPAREN: CALL,
+	token.EQ:       EQUALS,
+	token.NEQ:      EQUALS,
+	token.LT:       LESSGREATER,
+	token.GT:       LESSGREATER,
+	token.GE:       LESSGREATER,
+	token.LE:       LESSGREATER,
+	token.ADD:      SUM,
+	token.SUB:      SUM,
+	token.MUL:      PRODUCT,
+	token.DIV:      PRODUCT,
+	token.MOD:      PRODUCT,
+	token.LPAREN:   CALL,
+	token.LBRACKET: INDEX,
 }
 
 type (
@@ -72,15 +75,18 @@ func New(l *lexer.Lexer) *Parser {
 
 	p.registerPrefix(token.IDENT, p.parseIdentifier)
 	p.registerPrefix(token.INT, p.parseIntegerLiteral)
+	p.registerPrefix(token.STRING, p.parseStringLiteral)
 	p.registerPrefix(token.LPAREN, p.parseGroupedExpression)
 	p.registerPrefix(token.IF, p.parseIfExpression)
 	p.registerPrefix(token.TRUE, p.parseBooleanLiteral)
 	p.registerPrefix(token.FALSE, p.parseBooleanLiteral)
 	p.registerPrefix(token.BANG, p.parsePrefixExpression)
 	p.registerPrefix(token.SUB, p.parsePrefixExpression)
-
+	p.registerPrefix(token.LBRACKET, p.parseArrayLiteral)
 	p.registerPrefix(token.FUNCTION, p.parseFunctionLiteral)
+
 	p.registerInfix(token.LPAREN, p.parseCallExpression)
+	p.registerInfix(token.LBRACKET, p.parseIndexExpression)
 
 	p.registerInfix(token.ADD, p.parseInfixExpression)
 	p.registerInfix(token.SUB, p.parseInfixExpression)
@@ -174,6 +180,11 @@ func (p *Parser) parseIntegerLiteral() ast.Expression {
 		Token: p.currToken,
 		Value: value,
 	}
+}
+
+// parseStringLiteral parse a literal string
+func (p *Parser) parseStringLiteral() ast.Expression {
+	return &ast.StringLiteral{Token: p.currToken, Value: string(p.currToken.Literal)}
 }
 
 // parsePrefixExpression constructs an AST expression node for prefix expression.
@@ -482,9 +493,61 @@ func (p *Parser) parseCallExpression(function ast.Expression) ast.Expression {
 	return &ast.CallExpression{
 		Token:     p.currToken,
 		Function:  function,
-		Arguments: p.parseCallArguments(),
+		Arguments: p.parseExpressionList(token.RPAREN),
 	}
 }
+
+// parseExpressionList parses a list of expressions
+func (p *Parser) parseExpressionList(end token.Type) []ast.Expression {
+
+	list := []ast.Expression{}
+	// check if list is empty
+	if p.peekTokenIs(end) {
+		p.nextToken()
+		return list
+	}
+
+	p.nextToken()
+	list = append(list, p.parseExpression(LOWEST))
+
+	for p.peekTokenIs(token.COMMA) {
+		p.nextToken()
+		p.nextToken()
+
+		list = append(list, p.parseExpression(LOWEST))
+	}
+
+	if !p.expectPeek(end) {
+		return nil
+	}
+
+	return list
+}
+
+// parseArrayLiteral parses an array
+func (p *Parser) parseArrayLiteral() ast.Expression {
+
+	return &ast.ArrayLiteral{
+		Token:    p.currToken,
+		Elements: p.parseExpressionList(token.RBRACKET),
+	}
+}
+
+// parseIndexExpression parses an expression within the index op
+func (p *Parser) parseIndexExpression(left ast.Expression) ast.Expression {
+	exp := &ast.IndexExpression{Token: p.currToken, Left: left}
+
+	p.nextToken()
+
+	exp.Index = p.parseExpression(LOWEST)
+
+	if !p.expectPeek(token.RBRACKET) {
+		return nil
+	}
+
+	return exp
+}
+
 func (p *Parser) currTokenIs(t token.Type) bool {
 	return p.currToken.Type == t
 }

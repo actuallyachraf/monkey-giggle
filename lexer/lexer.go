@@ -63,6 +63,12 @@ func (l *Lexer) NextToken() token.Token {
 		tok = token.New(token.SEMICOLON, l.ch)
 	case ',':
 		tok = token.New(token.COMMA, l.ch)
+	case '"':
+		tok = token.NewLiteral(token.STRING, l.readString())
+	case '[':
+		tok = token.New(token.LBRACKET, l.ch)
+	case ']':
+		tok = token.New(token.RBRACKET, l.ch)
 	case '(':
 		tok = token.New(token.LPAREN, l.ch)
 	case ')':
@@ -144,6 +150,19 @@ func (l *Lexer) readNumber() string {
 
 	for isDigit(l.ch) {
 		l.readChar()
+	}
+
+	return l.input[pos:l.pos]
+}
+
+// readString is used to read strings that appear between quotes.
+func (l *Lexer) readString() string {
+	pos := l.pos + 1 // skip the quote
+	for {
+		l.readChar()
+		if l.ch == '"' || l.ch == 0 {
+			break
+		}
 	}
 
 	return l.input[pos:l.pos]

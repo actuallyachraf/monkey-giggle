@@ -62,6 +62,9 @@ func TestLexer(t *testing.T) {
 				  10 != 9;
 				  5 <= 5;
 				  6 >= 6;
+				  "foobar"
+				  "foo bar"
+				  [1,2];
 				  `
 		tests := []struct {
 			expectedType    token.Type
@@ -147,6 +150,14 @@ func TestLexer(t *testing.T) {
 			{token.INT, "6"},
 			{token.GE, ">="},
 			{token.INT, "6"},
+			{token.SEMICOLON, ";"},
+			{token.STRING, "foobar"},
+			{token.STRING, "foo bar"},
+			{token.LBRACKET, "["},
+			{token.INT, "1"},
+			{token.COMMA, ","},
+			{token.INT, "2"},
+			{token.RBRACKET, "]"},
 			{token.SEMICOLON, ";"},
 			{token.EOF, ""},
 		}

@@ -310,6 +310,156 @@ func TestEval(t *testing.T) {
 
 		testIntegerObject(t, testEval(input), 70)
 	})
+	t.Run("TestEvalStringExpression", func(t *testing.T) {
+
+		input := `"hello world!"`
+
+		evaled := testEval(input)
+
+		str, ok := evaled.(*object.String)
+		if !ok {
+			t.Fatalf("object is not String got %T , (%+v)", evaled, evaled)
+		}
+
+		if str.Value != "hello world!" {
+			t.Fatalf("wrong object value expected %s got %s", input, str.Value)
+		}
+	})
+	t.Run("TestEvalStringConcat", func(t *testing.T) {
+		input := `"Hello" +" " + "World!"`
+		evaled := testEval(input)
+		str, ok := evaled.(*object.String)
+		if !ok {
+			t.Fatalf("object is not String got %T , (%+v)", evaled, evaled)
+		}
+
+		if str.Value != "Hello World!" {
+			t.Fatalf("wrong object value expected %s got %s", input, str.Value)
+		}
+	})
+	t.Run("TestEvalBuiltInFunction", func(t *testing.T) {
+		tests := []struct {
+			input    string
+			expected interface{}
+		}{
+			{`len("")`, 0},
+			{`len("four")`, 4},
+			{`len("Hello World!")`, 12},
+			{`len(1)`, "argument to `len` not supported, got INTEGER"},
+			{`len("one","two")`, "wrong number of arguments, expected 1 got 2"},
+			{`head([1,2,3])`, 1},
+			{`tail([1,2,3])`, []int{2, 3}},
+			{`append([],1)`, []int{1}},
+		}
+
+		for _, tt := range tests {
+			evaled := testEval(tt.input)
+			switch expected := tt.expected.(type) {
+			case int:
+				testIntegerObject(t, evaled, int64(expected))
+			case string:
+				errObj, ok := evaled.(*object.Error)
+				if !ok {
+					t.Errorf("object is not an error got %T (%+v)", evaled, evaled)
+					continue
+				}
+				if errObj.Message != expected {
+					t.Errorf("wrong error message ! expected %q got %q", expected, errObj.Message)
+				}
+			case []int:
+				array, ok := evaled.(*object.Array)
+				if !ok {
+					t.Errorf("obj not Array. got=%T (%+v)", evaled, evaled)
+					continue
+				}
+
+				if len(array.Elements) != len(expected) {
+					t.Errorf("wrong num of elements. want=%d, got=%d",
+						len(expected), len(array.Elements))
+					continue
+				}
+
+				for i, expectedElem := range expected {
+					testIntegerObject(t, array.Elements[i], int64(expectedElem))
+				}
+			}
+		}
+	})
+	t.Run("TestEvalArrayLiteral", func(t *testing.T) {
+		input := "[1, 2 * 2, 3 + 3]"
+
+		evaluated := testEval(input)
+		result, ok := evaluated.(*object.Array)
+		if !ok {
+			t.Fatalf("object is not Array. got=%T (%+v)", evaluated, evaluated)
+		}
+
+		if len(result.Elements) != 3 {
+			t.Fatalf("array has wrong num of elements. got=%d",
+				len(result.Elements))
+		}
+
+		testIntegerObject(t, result.Elements[0], 1)
+		testIntegerObject(t, result.Elements[1], 4)
+		testIntegerObject(t, result.Elements[2], 6)
+	})
+	t.Run("TestEvalIndexExpression", func(t *testing.T) {
+		tests := []struct {
+			input    string
+			expected interface{}
+		}{
+			{
+				"[1, 2, 3][0]",
+				1,
+			},
+			{
+				"[1, 2, 3][1]",
+				2,
+			},
+			{
+				"[1, 2, 3][2]",
+				3,
+			},
+			{
+				"let i = 0; [1][i];",
+				1,
+			},
+			{
+				"[1, 2, 3][1 + 1];",
+				3,
+			},
+			{
+				"let myArray = [1, 2, 3]; myArray[2];",
+				3,
+			},
+			{
+				"let myArray = [1, 2, 3]; myArray[0] + myArray[1] + myArray[2];",
+				6,
+			},
+			{
+				"let myArray = [1, 2, 3]; let i = myArray[0]; myArray[i]",
+				2,
+			},
+			{
+				"[1, 2, 3][3]",
+				nil,
+			},
+			{
+				"[1, 2, 3][-1]",
+				nil,
+			},
+		}
+
+		for _, tt := range tests {
+			evaluated := testEval(tt.input)
+			integer, ok := tt.expected.(int)
+			if ok {
+				testIntegerObject(t, evaluated, int64(integer))
+			} else {
+				testNullObject(t, evaluated)
+			}
+		}
+	})
 
 }
 
