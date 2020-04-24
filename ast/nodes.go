@@ -404,3 +404,34 @@ func (ie *IndexExpression) String() string {
 
 	return out.String()
 }
+
+// HashmapLiteral represents a hashmap
+type HashmapLiteral struct {
+	Token token.Token
+	Pairs map[Expression]Expression
+}
+
+func (hl *HashmapLiteral) expressionNode() {}
+
+// TokenLiteral implements the node interface
+func (hl *HashmapLiteral) TokenLiteral() token.Literal {
+	return hl.Token.Literal
+}
+
+// String implements the stringer interface
+func (hl *HashmapLiteral) String() string {
+	var out bytes.Buffer
+
+	pairs := []string{}
+
+	for k, v := range hl.Pairs {
+		pairs = append(pairs, k.String()+":"+v.String())
+	}
+
+	out.WriteString("{")
+	out.WriteString(strings.Join(pairs, ", "))
+	out.WriteString("}")
+
+	return out.String()
+
+}

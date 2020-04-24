@@ -58,6 +58,25 @@ giggle>> append([1,2,3,4,5],6)
 
 ```
 
+- Types
+
+```javascript
+
+giggle>> "Hello World"
+Hello World
+giggle>> 2555
+2555
+giggle>> true
+true
+giggle>> {"one":1,"two":2,"three":3}
+{one: 1, two: 2, three: 3}
+giggle>> [1,2,3,4,5]
+[1, 2, 3, 4, 5]
+giggle>> let map = {"one":1,"two":2,"three":3}
+giggle>> map["one"]
+1
+```
+
 - Functions
 
 ```javascript

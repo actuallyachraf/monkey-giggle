@@ -767,6 +767,40 @@ func TestParser(t *testing.T) {
 			return
 		}
 	})
+	t.Run("TestParseHashmapLiteral", func(t *testing.T) {
+
+		input := `{"one":1,"two":2,"three":3}`
+
+		l := lexer.New(input)
+		p := New(l)
+		program := p.Parse()
+		checkParserError(t, p)
+
+		stmt := program.Statements[0].(*ast.ExpressionStatement)
+
+		hashmap, ok := stmt.Expression.(*ast.HashmapLiteral)
+		if !ok {
+			t.Fatalf("hashmap not ast.HashmapLiteral. got=%T", stmt.Expression)
+		}
+		if len(hashmap.Pairs) != 3 {
+			t.Errorf("wrong parameter number expected 3 got %d", len(hashmap.Pairs))
+		}
+		expected := map[string]int64{
+			"one":   1,
+			"two":   2,
+			"three": 3,
+		}
+
+		for key, val := range hashmap.Pairs {
+			literal, ok := key.(*ast.StringLiteral)
+			if !ok {
+				t.Errorf("wrong literal type expected StringLiteral got %T", key)
+			}
+
+			expectedValue := expected[literal.String()]
+			testIntegerLiteral(t, val, expectedValue)
+		}
+	})
 }
 
 func testLetStatement(t *testing.T, s ast.Statement, name token.Literal) bool {

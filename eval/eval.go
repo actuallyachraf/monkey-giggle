@@ -67,6 +67,8 @@ func Eval(node ast.Node, env *object.Environment) object.Object {
 			return index
 		}
 		return evalIndexExpression(left, index)
+	case *ast.HashmapLiteral:
+		return evalHashmapLiteral(node, env)
 	case *ast.PrefixExpression:
 		right := Eval(node.Right, env)
 		if isError(right) {
@@ -291,6 +293,8 @@ func evalIndexExpression(left, index object.Object) object.Object {
 	switch {
 	case left.Type() == object.ARRAY && index.Type() == object.INTEGER:
 		return evalArrayIndexExpression(left, index)
+	case left.Type() == object.HASH:
+		return evalHashmapIndexExpression(left, index)
 	default:
 		return NULL
 	}
@@ -307,6 +311,46 @@ func evalArrayIndexExpression(array, index object.Object) object.Object {
 	}
 
 	return arrayObj.Elements[idx]
+}
+
+// evalHashmapIndexExpression evaluates expression in hashmap keys
+func evalHashmapIndexExpression(hash, index object.Object) object.Object {
+
+	hashObj := hash.(*object.HashMap)
+
+	key, ok := index.(object.Hashable)
+	if !ok {
+		return newError("not valid key for hashmap literal : %s", index.Type())
+	}
+	pair, ok := hashObj.Pairs[key.HashKey()]
+	if !ok {
+		return NULL
+	}
+	return pair.Value
+}
+
+// evalHashmapLiteral evaluates hashmap literals
+func evalHashmapLiteral(node *ast.HashmapLiteral, env *object.Environment) object.Object {
+	pairs := make(map[object.HashKey]object.HashPair)
+
+	for k, v := range node.Pairs {
+		key := Eval(k, env)
+		if isError(key) {
+			return key
+		}
+		hashKey, ok := key.(object.Hashable)
+		if !ok {
+			return newError("not valid key for hashmap literal : %s", key.Type())
+		}
+		val := Eval(v, env)
+		if isError(val) {
+			return val
+		}
+		hashed := hashKey.HashKey()
+		pairs[hashed] = object.HashPair{Key: key, Value: val}
+	}
+
+	return &object.HashMap{Pairs: pairs}
 }
 
 // applyFunction fn to a list of arguments

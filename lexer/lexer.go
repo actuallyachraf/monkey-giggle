@@ -59,6 +59,8 @@ func (l *Lexer) NextToken() token.Token {
 		tok = token.New(token.DIV, l.ch)
 	case '%':
 		tok = token.New(token.MOD, l.ch)
+	case ':':
+		tok = token.New(token.COLON, l.ch)
 	case ';':
 		tok = token.New(token.SEMICOLON, l.ch)
 	case ',':

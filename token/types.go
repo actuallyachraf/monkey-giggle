@@ -47,6 +47,8 @@ const (
 
 	// Delimiters are used to separate text representations
 
+	// COLON represents the colon assignment for hashmaps
+	COLON = ":"
 	// SEMICOLON represents the semicolon delimiter for scopes
 	SEMICOLON = ";"
 	// COMMA represents the comma delimiter for values

@@ -17,6 +17,8 @@ const (
 	BUILTIN = "BUILTIN"
 	// ARRAY represents array data type
 	ARRAY = "ARRAY"
+	// HASH represents a hashmap data type
+	HASH = "HASH"
 	// ERROR represents errors that happen during runtime
 	ERROR = "ERROR"
 )
@@ -29,4 +31,9 @@ type Type string
 type Object interface {
 	Type() Type
 	Inspect() string
+}
+
+// Hashable tells us whether an object can be used as a key in a hashmap
+type Hashable interface {
+	HashKey() HashKey
 }
