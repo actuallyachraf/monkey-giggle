@@ -2,9 +2,11 @@ package object
 
 import (
 	"bytes"
+	"fmt"
 	"strings"
 
 	"github.com/actuallyachraf/monkey-giggle/ast"
+	"github.com/actuallyachraf/monkey-giggle/code"
 )
 
 // Function represents a function literal each function gets a local environment.
@@ -56,4 +58,21 @@ func (b *BuiltIn) Type() Type {
 // Inspect implements the object interface
 func (b *BuiltIn) Inspect() string {
 	return "built-in function"
+}
+
+// CompiledFunction unlike function holds compiled bytecode instructions
+type CompiledFunction struct {
+	Instructions code.Instructions
+	NumLocals    int
+	NumParams    int
+}
+
+// Type implements the object interface
+func (c *CompiledFunction) Type() Type {
+	return COMPILEDFUNC
+}
+
+// Inspect implements the object interface
+func (c *CompiledFunction) Inspect() string {
+	return fmt.Sprintf("CompiledFunc[%p]", c)
 }

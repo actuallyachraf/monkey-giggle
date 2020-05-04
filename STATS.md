@@ -1,15 +1,15 @@
+# Codebase Statistics
+
 ───────────────────────────────────────────────────────────────────────────────
 Language                 Files     Lines     Code  Comments   Blanks Complexity
 ───────────────────────────────────────────────────────────────────────────────
-Go                          25      3803     3053       253      497        295
+Go                          33      5936     4843       353      740        539
+Markdown                     2       122       88         0       34          0
 gitignore                    1       120       46        46       28          0
-Plain Text                   1         0        0         0        0          0
-Markdown                     1       101       72         0       29          0
 ───────────────────────────────────────────────────────────────────────────────
-Total                       28      4024     3171       299      554        295
+Total                       36      6178     4977       399      802        539
 ───────────────────────────────────────────────────────────────────────────────
-Estimated Cost to Develop $90,750
-Estimated Schedule Effort 6.164166 months
-Estimated People Required 1.743941
+Estimated Cost to Develop $145,683
+Estimated Schedule Effort 7.378823 months
+Estimated People Required 2.338724
 ───────────────────────────────────────────────────────────────────────────────
-

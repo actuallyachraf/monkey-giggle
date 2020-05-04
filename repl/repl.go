@@ -6,9 +6,10 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/actuallyachraf/monkey-giggle/eval"
+	"github.com/actuallyachraf/monkey-giggle/compiler"
 	"github.com/actuallyachraf/monkey-giggle/object"
 	"github.com/actuallyachraf/monkey-giggle/parser"
+	"github.com/actuallyachraf/monkey-giggle/vm"
 
 	"github.com/actuallyachraf/monkey-giggle/lexer"
 )
@@ -25,8 +26,14 @@ const EXIT = "Ohhh you're leaving already !"
 // Start the read eval print loop.
 func Start(in io.Reader, out io.Writer) {
 	scanner := bufio.NewScanner(in)
-	env := object.NewEnv()
-	fmt.Print(WELCOME)
+
+	constants := []object.Object{}
+	globals := make([]object.Object, vm.GlobalsSize)
+
+	symbolTable := compiler.NewSymbolTable()
+	for i, v := range object.Builtins {
+		symbolTable.DefineBuiltIn(i, v.Name)
+	}
 
 	for {
 		fmt.Printf(PROMPT)
@@ -38,27 +45,39 @@ func Start(in io.Reader, out io.Writer) {
 		line := scanner.Text()
 
 		if line == "exit" {
-			fmt.Printf(EXIT)
+			fmt.Println(EXIT)
 			break
 		}
-
 		l := lexer.New(line)
 		p := parser.New(l)
 
 		program := p.Parse()
-
 		if len(p.Errors()) != 0 {
 			printParserErrors(out, p.Errors())
 			continue
 		}
-		evaled := eval.Eval(program, env)
-		if evaled != nil {
-			io.WriteString(out, evaled.Inspect())
-			io.WriteString(out, "\n")
+
+		comp := compiler.NewWithState(symbolTable, constants)
+		err := comp.Compile(program)
+		if err != nil {
+			fmt.Fprintf(out, "Woops! Compilation failed:\n %s\n", err)
+			continue
 		}
 
-	}
+		code := comp.Bytecode()
+		constants = code.Constants
 
+		machine := vm.NewWithGlobalState(code, globals)
+		err = machine.Run()
+		if err != nil {
+			fmt.Fprintf(out, "Woops! Executing bytecode failed:\n %s\n", err)
+			continue
+		}
+
+		lastPopped := machine.LastPoppedStackElem()
+		io.WriteString(out, lastPopped.Inspect())
+		io.WriteString(out, "\n")
+	}
 }
 
 func printParserErrors(out io.Writer, errors []string) {

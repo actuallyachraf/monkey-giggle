@@ -1,6 +1,10 @@
 # monkey-giggle
 
-After cloning the project.
+monkey-giggle is a toy based language with a similar syntax to Javascript,
+the language is both interpreted and compiled.
+
+monkey-giggle compiles to [bytecode](code/code.go) that runs inside a stack based
+[virtual machine](vm/vm.go).
 
 ## Build
 
@@ -74,6 +78,8 @@ giggle>> [1,2,3,4,5]
 [1, 2, 3, 4, 5]
 giggle>> let map = {"one":1,"two":2,"three":3}
 giggle>> map["one"]
+
+
 1
 ```
 

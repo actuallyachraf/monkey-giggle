@@ -541,7 +541,7 @@ func TestParser(t *testing.T) {
 		}
 	})
 	t.Run("TestParseFunctionLiterals", func(t *testing.T) {
-		input := `fn(x, y) { x + y; }`
+		input := `fn(x, y) { x + y }`
 
 		l := lexer.New(input)
 		p := New(l)

@@ -21,6 +21,8 @@ const (
 	HASH = "HASH"
 	// ERROR represents errors that happen during runtime
 	ERROR = "ERROR"
+	// COMPILEDFUNC represents a compiled function
+	COMPILEDFUNC = "COMPILEDFUNC"
 )
 
 // Type represents the type of a given object.
