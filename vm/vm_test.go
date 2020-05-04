@@ -302,6 +302,53 @@ func TestVM(t *testing.T) {
 		}
 		runVMTests(t, tests)
 	})
+	t.Run("TestFibonnacci", func(t *testing.T) {
+		tests := []vmTestCase{
+			{
+				input: `
+				let fib = fn(x){
+					if (x == 0){
+						return 0;
+					} else {
+						if (x == 1){
+							return 1;
+						} else {
+							fib(x - 1) + fib(x - 2);
+						}
+					}
+				};
+				fib(15);
+				`,
+				expected: 610,
+			}, {
+				input: `
+				let toSort = [9,8,7,6,5,4,3,2,1];
+				let insert = fn(arr,elem){
+					if (len(arr) == 0){
+						return [elem];
+					} else {
+						if (elem < head(arr)){
+							return concat(concat([elem],[head(arr)]),tail(arr));
+						} else {
+							return concat([head(arr)],insert(tail(arr),elem));
+						}
+					}
+				};
+				let sortByInsert = fn(arr){
+					if (len(arr) == 0){
+						return [];
+					} else {
+						insert(sortByInsert(tail(arr)),head(arr));
+					}
+				};
+
+				sortByInsert(toSort)
+				`,
+				expected: []int{1, 2, 3, 3, 5, 6, 7, 8, 9},
+			},
+		}
+		runVMTests(t, tests)
+	})
 }
 
 // parse takes an input string and returns an ast.Program

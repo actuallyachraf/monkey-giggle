@@ -105,6 +105,42 @@ giggle>> cube(3)
 giggle>> map([1,2,3],cube)
 [1, 8, 27]
 
+giggle >> let toSort = [9,8,7,6,5,4,3,2,1];
+    let insert = fn(arr,elem){
+        if (len(arr) == 0){
+            return [elem];
+        } else {
+            if (elem < head(arr)){
+                return concat(concat([elem],[head(arr)]),tail(arr));
+            } else {
+                return concat([head(arr)],insert(tail(arr),elem));
+            }
+        }
+    };
+    let sortByInsert = fn(arr){
+        if (len(arr) == 0){
+            return [];
+        } else {
+            insert(sortByInsert(tail(arr)),head(arr));
+        }
+    };
+
+giggle >> sortByInsert(toSort)
+giggle >> [1,2,3,4,5,6,7,8,9]
+
+giggle >> let fib = fn(x){
+     if (x == 0){
+      return 0;
+     } else {
+      if (x == 1){
+       return 1;
+      } else {
+       fib(x - 1) + fib(x - 2);
+      }
+     }
+    };
+giggle >> fib(15);
+giggle >> 610
 ```
 
 - REPL

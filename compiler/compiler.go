@@ -193,11 +193,11 @@ func (c *Compiler) Compile(node ast.Node) error {
 			}
 		}
 	case *ast.LetStatement:
+		sym := c.symbolTable.Define(string(node.Name.Value))
 		err := c.Compile(node.Value)
 		if err != nil {
 			return err
 		}
-		sym := c.symbolTable.Define(string(node.Name.Value))
 		if sym.Scope == GlobalScope {
 			c.emit(code.OpSetGlobal, sym.Index)
 		} else {

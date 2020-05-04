@@ -99,6 +99,26 @@ var Builtins = []struct {
 
 			},
 		},
+	}, {
+		Name: "concat",
+		Fn: &BuiltIn{
+			Fn: func(args ...Object) Object {
+				if len(args) != 2 {
+					return newError("wrong number of arguments, expected %d got %d", 2, len(args))
+				}
+				if args[0].Type() != ARRAY || args[1].Type() != ARRAY {
+					return newError("argument to `concat` must be ARRAY got %s", args[0].Type())
+				}
+				arr1 := args[0].(*Array)
+				arr2 := args[1].(*Array)
+				length := len(arr1.Elements) + len(arr2.Elements)
+				newElemens := make([]Object, 0, length)
+				newElemens = append(newElemens, arr1.Elements...)
+				newElemens = append(newElemens, arr2.Elements...)
+
+				return &Array{Elements: newElemens}
+			},
+		},
 	},
 }
 
