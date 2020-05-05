@@ -45,7 +45,8 @@ func New(bytecode compiler.Bytecode) *VM {
 	// the program bytecode is considered an entire function and is pushed
 	// as part of it's own call frame
 	mainFn := &object.CompiledFunction{Instructions: bytecode.Instructions}
-	mainFrame := NewFrame(mainFn, 0)
+	mainClosure := &object.Closure{Fn: mainFn}
+	mainFrame := NewFrame(mainClosure, 0)
 
 	frames := make([]*Frame, MaxFrames)
 	frames[0] = mainFrame
@@ -194,7 +195,6 @@ func (vm *VM) Run() error {
 			if err != nil {
 				return err
 			}
-
 		case code.OpArray:
 			numElements := int(code.ReadUint16(inst[ip+1:]))
 			vm.currentFrame().ip += 2
@@ -268,6 +268,24 @@ func (vm *VM) Run() error {
 			if err != nil {
 				return err
 			}
+		case code.OpClosure:
+			constIndex := code.ReadUint16(inst[ip+1:])
+			numFree := code.ReadUint8(inst[ip+3:])
+			vm.currentFrame().ip += 3
+
+			err := vm.pushClosure(int(constIndex), int(numFree))
+			if err != nil {
+				return err
+			}
+		case code.OpGetFree:
+			freeIndex := code.ReadUint8(inst[ip+1:])
+			vm.currentFrame().ip++
+
+			currentClosure := vm.currentFrame().cl
+			err := vm.push(currentClosure.FreeVariables[freeIndex])
+			if err != nil {
+				return err
+			}
 		}
 	}
 
@@ -317,8 +335,8 @@ func (vm *VM) executeFunctionCall(numArgs int) error {
 	callee := vm.stack[vm.sp-1-int(numArgs)]
 
 	switch callee := callee.(type) {
-	case *object.CompiledFunction:
-		return vm.callFunc(callee, numArgs)
+	case *object.Closure:
+		return vm.callClosure(callee, numArgs)
 	case *object.BuiltIn:
 		return vm.callBuiltIn(callee, numArgs)
 	default:
@@ -326,16 +344,16 @@ func (vm *VM) executeFunctionCall(numArgs int) error {
 	}
 }
 
-// callFunc executes a function call on user defined functions
-func (vm *VM) callFunc(fn *object.CompiledFunction, numArgs int) error {
-	if numArgs != fn.NumParams {
-		return fmt.Errorf("wrong number of parameters : want %d, got %d", fn.NumParams, numArgs)
+// callClosure executes a function call on user defined functions
+func (vm *VM) callClosure(cl *object.Closure, numArgs int) error {
+	if numArgs != cl.Fn.NumParams {
+		return fmt.Errorf("wrong number of parameters : want %d, got %d", cl.Fn.NumParams, numArgs)
 	}
 	// substract numArgs to correctly set bp
-	frame := NewFrame(fn, vm.sp-numArgs)
+	frame := NewFrame(cl, vm.sp-numArgs)
 	vm.pushFrame(frame)
 	// increment the stack pointer to make place for local variables
-	vm.sp = frame.basePointer + fn.NumLocals
+	vm.sp = frame.basePointer + cl.Fn.NumLocals
 	return nil
 }
 
@@ -564,4 +582,22 @@ func (vm *VM) buildHashmapObject(startIndex, endIndex int) (object.Object, error
 	}
 
 	return &object.HashMap{Pairs: hashedPairs}, nil
+}
+
+// pushClosure builds a closure and pushes it to the stack
+func (vm *VM) pushClosure(constIndex int, numFree int) error {
+
+	constant := vm.constants[constIndex]
+	fn, ok := constant.(*object.CompiledFunction)
+	if !ok {
+		return fmt.Errorf("not a function : %+v", constant)
+	}
+	free := make([]object.Object, numFree)
+	for i := 0; i < numFree; i++ {
+		free[i] = vm.stack[vm.sp-numFree+i]
+	}
+	vm.sp = vm.sp - numFree
+	cl := &object.Closure{Fn: fn, FreeVariables: free}
+
+	return vm.push(cl)
 }

@@ -320,31 +320,126 @@ func TestVM(t *testing.T) {
 				fib(15);
 				`,
 				expected: 610,
+			},
+		}
+		runVMTests(t, tests)
+	})
+	t.Run("TestInsertionSort", func(t *testing.T) {
+		tests := []vmTestCase{{
+			input: `
+		let toSort = [9,8,7,6,5,4,3,2,1];
+		let insert = fn(arr,elem){
+			if (len(arr) == 0){
+				return [elem];
+			} else {
+				if (elem < head(arr)){
+					return concat(concat([elem],[head(arr)]),tail(arr));
+				} else {
+					return concat([head(arr)],insert(tail(arr),elem));
+				}
+			}
+		};
+		let sortByInsert = fn(arr){
+			if (len(arr) == 0){
+				return [];
+			} else {
+				insert(sortByInsert(tail(arr)),head(arr));
+			}
+		};
+
+		sortByInsert(toSort)
+		`,
+			expected: []int{1, 2, 3, 3, 5, 6, 7, 8, 9},
+		},
+		}
+		runVMTests(t, tests)
+	})
+	t.Run("TestClosure", func(t *testing.T) {
+		tests := []vmTestCase{
+			{
+				input: `
+			let a = 1;
+			let newAdderOuter = fn(b) {
+				fn(c) {
+					fn(d) { a + b + c + d };
+				};
+			};
+			let newAdderInner = newAdderOuter(2)
+			let adder = newAdderInner(3);
+			adder(8);
+			`,
+				expected: 14,
 			}, {
 				input: `
-				let toSort = [9,8,7,6,5,4,3,2,1];
-				let insert = fn(arr,elem){
-					if (len(arr) == 0){
-						return [elem];
-					} else {
-						if (elem < head(arr)){
-							return concat(concat([elem],[head(arr)]),tail(arr));
-						} else {
-							return concat([head(arr)],insert(tail(arr),elem));
-						}
-					}
+			let newClosure = fn(a) {
+				fn() { a; };
+			};
+			let closure = newClosure(99);
+			closure();
+			`,
+				expected: 99,
+			},
+			{
+				input: `
+			let newAdder = fn(a, b) {
+				fn(c) { a + b + c };
+			};
+			let adder = newAdder(1, 2);
+			adder(8);
+			`,
+				expected: 11,
+			},
+			{
+				input: `
+			let newAdder = fn(a, b) {
+				let c = a + b;
+				fn(d) { c + d };
+			};
+			let adder = newAdder(1, 2);
+			adder(8);
+			`,
+				expected: 11,
+			},
+			{
+				input: `
+			let newAdderOuter = fn(a, b) {
+				let c = a + b;
+				fn(d) {
+					let e = d + c;
+					fn(f) { e + f; };
 				};
-				let sortByInsert = fn(arr){
-					if (len(arr) == 0){
-						return [];
-					} else {
-						insert(sortByInsert(tail(arr)),head(arr));
-					}
+			};
+			let newAdderInner = newAdderOuter(1, 2)
+			let adder = newAdderInner(3);
+			adder(8);
+			`,
+				expected: 14,
+			},
+			{
+				input: `
+			let a = 1;
+			let newAdderOuter = fn(b) {
+				fn(c) {
+					fn(d) { a + b + c + d };
 				};
-
-				sortByInsert(toSort)
-				`,
-				expected: []int{1, 2, 3, 3, 5, 6, 7, 8, 9},
+			};
+			let newAdderInner = newAdderOuter(2)
+			let adder = newAdderInner(3);
+			adder(8);
+			`,
+				expected: 14,
+			},
+			{
+				input: `
+			let newClosure = fn(a, b) {
+				let one = fn() { a; };
+				let two = fn() { b; };
+				fn() { one() + two(); };
+			};
+			let closure = newClosure(9, 90);
+			closure();
+			`,
+				expected: 99,
 			},
 		}
 		runVMTests(t, tests)

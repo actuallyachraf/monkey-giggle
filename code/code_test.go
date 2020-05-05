@@ -14,6 +14,7 @@ func TestOpcode(t *testing.T) {
 		}{
 			{OpConstant, []int{65534}, []byte{byte(OpConstant), 255, 254}},
 			{OpAdd, []int{}, []byte{byte(OpAdd)}},
+			{OpClosure, []int{65534, 255}, []byte{byte(OpClosure), 255, 254, 255}},
 		}
 
 		for _, tt := range tests {

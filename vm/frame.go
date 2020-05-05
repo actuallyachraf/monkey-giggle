@@ -7,15 +7,15 @@ import (
 
 // Frame represents a stack frame used to execute function calls
 type Frame struct {
-	fn          *object.CompiledFunction
+	cl          *object.Closure
 	ip          int
 	basePointer int
 }
 
 // NewFrame creates a new frame for a given compiled function
-func NewFrame(fn *object.CompiledFunction, bp int) *Frame {
+func NewFrame(cl *object.Closure, bp int) *Frame {
 	return &Frame{
-		fn:          fn,
+		cl:          cl,
 		ip:          -1,
 		basePointer: bp,
 	}
@@ -23,5 +23,5 @@ func NewFrame(fn *object.CompiledFunction, bp int) *Frame {
 
 // Instructions returns the set of instructions inside the call frame
 func (f *Frame) Instructions() code.Instructions {
-	return f.fn.Instructions
+	return f.cl.Fn.Instructions
 }

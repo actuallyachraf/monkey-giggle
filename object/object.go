@@ -23,6 +23,8 @@ const (
 	ERROR = "ERROR"
 	// COMPILEDFUNC represents a compiled function
 	COMPILEDFUNC = "COMPILEDFUNC"
+	// CLOSURE represents a closure (a function that returns a new function)
+	CLOSURE = "CLOSURE"
 )
 
 // Type represents the type of a given object.

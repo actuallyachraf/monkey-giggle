@@ -72,6 +72,10 @@ const (
 	OpSetLocal
 	// OpGetBuiltin is used to fetch built-in function from their scope
 	OpGetBuiltin
+	// OpClosure marks closure functions
+	OpClosure
+	// OpGetFree is used to get free closure variables
+	OpGetFree
 )
 
 // Definition represents information about opcodes.
@@ -110,6 +114,8 @@ var lookupTable = map[OpCode]Definition{
 	OpGetLocal:       {"OpGetLocal", []int{1}},
 	OpSetLocal:       {"OpSetLocal", []int{1}},
 	OpGetBuiltin:     {"OpGetBuiltin", []int{1}},
+	OpClosure:        {"OpClosure", []int{2, 1}},
+	OpGetFree:        {"OpGetFree", []int{1}},
 }
 
 // Lookup fetches the opcode definition.
@@ -168,6 +174,8 @@ func (inst Instructions) FormatInstruction(def Definition, operands []int) strin
 		return def.Name
 	case 1:
 		return fmt.Sprintf("%s %d", def.Name, operands[0])
+	case 2:
+		return fmt.Sprintf("%s %d %d", def.Name, operands[0], operands[1])
 	}
 
 	return fmt.Sprintf("ERROR: unhandled operand count for %s", def.Name)
